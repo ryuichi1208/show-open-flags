@@ -91,13 +91,13 @@ const (
 	// other
 	O_ASYNC     int = syscall.O_ASYNC
 	O_CLOEXEC   int = syscall.O_CLOEXEC
-	O_DIRECT    int = 00040000 // Linuxでのみ定義されている場合もあるため定数で定義
+	O_DIRECT    int = 00040000 // Defined as a constant as it may only be defined on Linux
 	O_DIRECTORY int = syscall.O_DIRECTORY
 	O_DSYNC     int = syscall.O_DSYNC
 	O_FSYNC     int = syscall.O_FSYNC
-	O_LARGEFILE int = 00100000 // 同様の理由で定数定義
+	O_LARGEFILE int = 00100000 // Defined as a constant for the same reason
 	O_NDELAY    int = syscall.O_NDELAY
-	O_RSYNC     int = 00040000 // 同様の理由で定数定義
+	O_RSYNC     int = 00040000 // Defined as a constant for the same reason
 )
 
 func checkFlags(hex int64) []string {
@@ -165,7 +165,7 @@ func checkFlags(hex int64) []string {
 
 func main() {
 	if len(os.Args) < 1 {
-		fmt.Println("please pid")
+		fmt.Println("Please provide a PID")
 		os.Exit(1)
 	}
 
