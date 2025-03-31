@@ -10,7 +10,6 @@ import (
 	"io/fs"
 	"log"
 	"os"
-	"runtime"
 	"strconv"
 	"strings"
 	"syscall"
@@ -167,14 +166,23 @@ func checkFlags(hex int64) []string {
 	return fs
 }
 
-func main() {
-	// Check if running on Linux
-	if runtime.GOOS != "linux" {
-		fmt.Println("Error: This tool only supports Linux operating systems with /proc filesystem")
-		fmt.Println("Current OS:", runtime.GOOS)
+func runLinux() {
+	if len(os.Args) < 2 {
+		fmt.Println("Please provide a PID")
 		os.Exit(1)
 	}
 
-	// Call the Linux-specific implementation
-	runLinux()
+	fds, err := getFDList(fmt.Sprintf("/proc/%s/fd", os.Args[1]))
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	for _, fd := range fds {
+		procFile := fmt.Sprintf("/proc/%s/fdinfo/%d", os.Args[1], fd.fd)
+		flags := strings.TrimSpace(strings.Split(string(readFDInfo(procFile)), ":")[1])
+		hex, _ := strconv.ParseInt(flags, 8, 64)
+		fs := checkFlags(hex)
+
+		fmt.Printf("%s: %v\n", fd.fileName, fs)
+	}
 }
