@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
@@ -20,7 +19,7 @@ type FileInfo struct {
 }
 
 func getFDList(fileName string) ([]*FileInfo, error) {
-	files, err := ioutil.ReadDir(fileName)
+	files, err := os.ReadDir(fileName)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -41,7 +40,7 @@ func getFDList(fileName string) ([]*FileInfo, error) {
 				fi := &FileInfo{
 					fileName: realPath,
 					fd:       int64(i),
-					mode:     file.Mode(),
+					mode:     info.Mode(),
 				}
 				fileList = append(fileList, fi)
 			}
@@ -89,16 +88,16 @@ const (
 	O_EXCL   int = syscall.O_EXCL   // used with O_CREATE, file must not exist.
 	O_SYNC   int = syscall.O_SYNC   // open for synchronous I/O.
 	O_TRUNC  int = syscall.O_TRUNC  // truncate regular writable file when opened.
-	// othe
+	// other
 	O_ASYNC     int = syscall.O_ASYNC
 	O_CLOEXEC   int = syscall.O_CLOEXEC
-	O_DIRECT    int = syscall.O_DIRECT
+	O_DIRECT    int = 00040000 // Linuxでのみ定義されている場合もあるため定数で定義
 	O_DIRECTORY int = syscall.O_DIRECTORY
 	O_DSYNC     int = syscall.O_DSYNC
 	O_FSYNC     int = syscall.O_FSYNC
-	O_LARGEFILE int = syscall.O_LARGEFILE
+	O_LARGEFILE int = 00100000 // 同様の理由で定数定義
 	O_NDELAY    int = syscall.O_NDELAY
-	O_RSYNC     int = syscall.O_RSYNC
+	O_RSYNC     int = 00040000 // 同様の理由で定数定義
 )
 
 func checkFlags(hex int64) []string {
