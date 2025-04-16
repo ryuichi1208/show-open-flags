@@ -166,7 +166,7 @@ func checkFlags(hex int64) []string {
 	return fs
 }
 
-func runLinux() {
+func runImpl() {
 	if len(os.Args) < 2 {
 		fmt.Println("Please provide a PID")
 		os.Exit(1)
