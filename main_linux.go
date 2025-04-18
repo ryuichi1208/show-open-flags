@@ -10,6 +10,7 @@ import (
 	"io/fs"
 	"log"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"syscall"
@@ -166,23 +167,45 @@ func checkFlags(hex int64) []string {
 	return fs
 }
 
-func runImpl() {
+// IsSupportedOS checks if the current OS is supported
+func IsSupportedOS() (bool, string) {
+	// Linux is fully supported
+	if runtime.GOOS == "linux" {
+		return true, ""
+	}
+
+	// Check for BSD variants
+	bsdSystems := []string{"freebsd", "openbsd", "netbsd", "dragonfly"}
+	for _, bsd := range bsdSystems {
+		if runtime.GOOS == bsd {
+			return false, "BSD support is planned but not yet implemented"
+		}
+	}
+
+	// Other systems are not supported
+	return false, fmt.Sprintf("This tool does not support %s operating systems", runtime.GOOS)
+}
+
+func main() {
+	// Check if the OS is supported
+	supported, message := IsSupportedOS()
+
+	if !supported {
+		fmt.Println("Error: This tool only supports Linux operating systems with /proc filesystem")
+		if message != "" {
+			fmt.Println(message)
+		}
+		fmt.Println("Current OS:", runtime.GOOS)
+		os.Exit(1)
+	}
+
+	// If arguments are insufficient, show usage
 	if len(os.Args) < 2 {
-		fmt.Println("Please provide a PID")
+		fmt.Println("Usage:", os.Args[0], "<PID>")
+		fmt.Println("Please provide a process ID (PID)")
 		os.Exit(1)
 	}
 
-	fds, err := getFDList(fmt.Sprintf("/proc/%s/fd", os.Args[1]))
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	for _, fd := range fds {
-		procFile := fmt.Sprintf("/proc/%s/fdinfo/%d", os.Args[1], fd.fd)
-		flags := strings.TrimSpace(strings.Split(string(readFDInfo(procFile)), ":")[1])
-		hex, _ := strconv.ParseInt(flags, 8, 64)
-		fs := checkFlags(hex)
-
-		fmt.Printf("%s: %v\n", fd.fileName, fs)
-	}
+	// Call the OS-specific implementation
+	runImpl()
 }

@@ -5,8 +5,84 @@ package main
 
 import (
 	"reflect"
+	"runtime"
 	"testing"
 )
+
+func TestIsSupportedOS(t *testing.T) {
+	// 現在のOSを保存
+	originalGOOS := runtime.GOOS
+
+	// テスト終了時に元のOSに戻す
+	defer func() {
+		runtime.GOOS = originalGOOS
+	}()
+
+	tests := []struct {
+		name        string
+		mockOS      string
+		wantSupport bool
+		wantMessage string
+	}{
+		{
+			name:        "Linux should be supported",
+			mockOS:      "linux",
+			wantSupport: true,
+			wantMessage: "",
+		},
+		{
+			name:        "FreeBSD should return planned message",
+			mockOS:      "freebsd",
+			wantSupport: false,
+			wantMessage: "BSD support is planned but not yet implemented",
+		},
+		{
+			name:        "OpenBSD should return planned message",
+			mockOS:      "openbsd",
+			wantSupport: false,
+			wantMessage: "BSD support is planned but not yet implemented",
+		},
+		{
+			name:        "NetBSD should return planned message",
+			mockOS:      "netbsd",
+			wantSupport: false,
+			wantMessage: "BSD support is planned but not yet implemented",
+		},
+		{
+			name:        "DragonFly BSD should return planned message",
+			mockOS:      "dragonfly",
+			wantSupport: false,
+			wantMessage: "BSD support is planned but not yet implemented",
+		},
+		{
+			name:        "Windows should not be supported",
+			mockOS:      "windows",
+			wantSupport: false,
+			wantMessage: "This tool does not support windows operating systems",
+		},
+		{
+			name:        "Darwin should not be supported",
+			mockOS:      "darwin",
+			wantSupport: false,
+			wantMessage: "This tool does not support darwin operating systems",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// OSをモックする
+			runtime.GOOS = tt.mockOS
+
+			got, gotMessage := IsSupportedOS()
+			if got != tt.wantSupport {
+				t.Errorf("IsSupportedOS() support = %v, want %v", got, tt.wantSupport)
+			}
+			if gotMessage != tt.wantMessage {
+				t.Errorf("IsSupportedOS() message = %q, want %q", gotMessage, tt.wantMessage)
+			}
+		})
+	}
+}
 
 func Test_getFDList(t *testing.T) {
 	type args struct {
